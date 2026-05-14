@@ -29,6 +29,8 @@ const config = {
   logChannelId: process.env.LOG_CHANNEL_ID,
   securityChannelId: process.env.SECURITY_LOG_CHANNEL_ID,
   statusChannelId: process.env.STATUS_CHANNEL_ID,
+  pingChannelId: process.env.PING_CHANNEL_ID,
+  playersChannelId: process.env.PLAYERS_CHANNEL_ID,
   mcHost: process.env.MC_HOST,
   mcPort: process.env.MC_PORT || '25565',
   mcRconPort: process.env.MC_RCON_PORT || '25575',
@@ -56,6 +58,8 @@ const mc = new MinecraftServer(config.mcHost, config.mcPort, config.mcRconPort, 
 let logChannel = null;
 let securityChannel = null;
 let statusVoiceChannel = null;
+let pingVoiceChannel = null;
+let playersVoiceChannel = null;
 
 /* ========== YARDIMCI FONKSİYONLAR ========== */
 
@@ -119,8 +123,10 @@ client.once(Events.ClientReady, async () => {
 
   try {
     logChannel = await client.channels.fetch(config.logChannelId);
-    if (config.securityChannelId) securityChannel = await client.channels.fetch(config.securityChannelId);
-    if (config.statusChannelId) statusVoiceChannel = await client.channels.fetch(config.statusChannelId);
+    if (config.securityChannelId) securityChannel = await client.channels.fetch(config.securityChannelId).catch(()=>null);
+    if (config.statusChannelId) statusVoiceChannel = await client.channels.fetch(config.statusChannelId).catch(()=>null);
+    if (config.pingChannelId) pingVoiceChannel = await client.channels.fetch(config.pingChannelId).catch(()=>null);
+    if (config.playersChannelId) playersVoiceChannel = await client.channels.fetch(config.playersChannelId).catch(()=>null);
   } catch (e) {
     console.error('❌ Kanallara erişilemedi:', e.message);
   }
@@ -168,6 +174,31 @@ client.once(Events.ClientReady, async () => {
 
     statusIndex = (statusIndex + 1) % statuses.length;
   }, 5000);
+
+  // Ses Kanalı İstatistikleri Döngüsü (Discord rate limitine takılmamak için 6 dakikada bir)
+  setInterval(async () => {
+    try {
+      const status = await mc.getStatus();
+      
+      // Ping kanalını güncelle
+      if (pingVoiceChannel) {
+        const pingName = status.online ? `📶 Ping: ${status.latency}ms` : '📶 Ping: --';
+        if (pingVoiceChannel.name !== pingName) {
+          await pingVoiceChannel.setName(pingName).catch(() => {});
+        }
+      }
+
+      // Oyuncu sayısını güncelle
+      if (playersVoiceChannel) {
+        const playersName = status.online ? `👥 Aktif Oyuncu: ${status.players.online}` : '👥 Aktif Oyuncu: 0';
+        if (playersVoiceChannel.name !== playersName) {
+          await playersVoiceChannel.setName(playersName).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error('❌ İstatistik kanalları güncellenemedi:', e.message);
+    }
+  }, 360000); // 6 dakika
 
   setInterval(async () => {
     try { await tracker.updateXP(); } catch (e) { console.error('❌ XP hatası:', e.message); }
@@ -219,13 +250,13 @@ client.on(Events.MessageCreate, async (message) => {
 
     // Renkli Tellraw komutu
     const command = `tellraw @a ["",{"text":"[Discord] ","color":"blue"},{"text":"${safeName}","color":"yellow"},{"text":": ${safeText}","color":"white"}]`;
-    
+
     // Minecraft'a gönder
     const response = await mc.sendCommand(command);
-    
+
     // Mesaj başarıyla gittiyse emoji ile tepki ver
     if (response !== null) {
-      await message.react('✅').catch(() => {});
+      await message.react('✅').catch(() => { });
     }
   } catch (e) {
     console.error("❌ Mesaj Minecraft'a gönderilemedi:", e.message);
