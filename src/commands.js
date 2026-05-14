@@ -49,7 +49,7 @@ function createCommands(mc, tracker, storage) {
           .setRequired(true)
           .addChoices(
             { name: '⏰ En Çok Oynayan', value: 'süre' },
-            { name: '✨ En Yüksek XP',   value: 'xp' },
+            { name: '✨ En Yüksek XP', value: 'xp' },
           )
       )
   );
@@ -106,7 +106,7 @@ function createCommands(mc, tracker, storage) {
   handlers.set('ping', async (interaction) => {
     await interaction.deferReply();
     const discordPing = interaction.client.ws.ping;
-    
+
     let mcPing = '🔴 Ulaşılamıyor';
     const status = await mc.getStatus();
     if (status.online) mcPing = `🟢 ${status.latency}ms`;
@@ -134,7 +134,7 @@ function createCommands(mc, tracker, storage) {
   handlers.set('duyuru', async (interaction) => {
     const mesaj = interaction.options.getString('mesaj').replace(/"/g, '\\"');
     const command = `tellraw @a ["",{"text":"[DUYURU] ","color":"red","bold":true},{"text":"${mesaj}","color":"yellow","bold":false}]`;
-    
+
     const response = await mc.sendCommand(command);
     if (response !== null) {
       await interaction.reply('✅ Duyuru başarıyla gönderildi!');
@@ -163,7 +163,7 @@ function createCommands(mc, tracker, storage) {
   handlers.set('zaman', async (interaction) => {
     const vakit = interaction.options.getString('vakit');
     const response = await mc.sendCommand(`time set ${vakit}`);
-    
+
     if (response !== null) {
       await interaction.reply(`✅ Zaman başarıyla **${vakit}** olarak değiştirildi!`);
     } else {
@@ -191,7 +191,7 @@ function createCommands(mc, tracker, storage) {
   handlers.set('hava', async (interaction) => {
     const durum = interaction.options.getString('durum');
     const response = await mc.sendCommand(`weather ${durum}`);
-    
+
     if (response !== null) {
       await interaction.reply(`✅ Hava durumu başarıyla **${durum}** olarak ayarlandı!`);
     } else {
@@ -208,7 +208,7 @@ function createCommands(mc, tracker, storage) {
   handlers.set('oyun_saati', async (interaction) => {
     await interaction.deferReply();
     const response = await mc.sendCommand('time query daytime');
-    
+
     if (!response) {
       return interaction.editReply('❌ Oyun saati alınamadı. RCON bağlantısı kopuk olabilir.');
     }
@@ -221,12 +221,12 @@ function createCommands(mc, tracker, storage) {
     const ticks = parseInt(match[1]);
     let hours = Math.floor(ticks / 1000) + 6;
     const minutes = Math.floor(((ticks % 1000) / 1000) * 60);
-    
+
     if (hours >= 24) hours -= 24;
-    
+
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
-    
+
     let emoji = '☀️';
     if (hours >= 18 || hours < 6) emoji = '🌙';
     else if (hours >= 6 && hours < 8) emoji = '🌅';
@@ -237,7 +237,7 @@ function createCommands(mc, tracker, storage) {
       .setTitle(`${emoji} Minecraft Zamanı`)
       .setDescription(`Şu an dünyada saat: **${formattedHours}:${formattedMinutes}**`)
       .setFooter({ text: `Oyun İçi Tick: ${ticks}` });
-      
+
     await interaction.editReply({ embeds: [embed] });
   });
 
@@ -250,14 +250,14 @@ function createCommands(mc, tracker, storage) {
   handlers.set('sunucu_detay', async (interaction) => {
     await interaction.deferReply();
     const status = await mc.getStatus();
-    
+
     // Veritabanı istatistikleri
     const allPlayers = Object.keys(storage.data.players || {});
     const totalRegistered = allPlayers.length;
-    
+
     let totalPlaytime = 0;
     let mostActivePlayer = { name: 'Yok', time: 0 };
-    
+
     for (const p of allPlayers) {
       const pData = storage.getPlayer(p);
       totalPlaytime += pData.totalPlaytime || 0;
@@ -267,7 +267,7 @@ function createCommands(mc, tracker, storage) {
     }
 
     const totalHours = Math.floor(totalPlaytime / 60);
-    
+
     // Uptime (Botun çalışma süresi)
     const uptimeDays = Math.floor(interaction.client.uptime / 86400000);
     const uptimeHours = Math.floor(interaction.client.uptime / 3600000) % 24;
@@ -286,7 +286,7 @@ function createCommands(mc, tracker, storage) {
         { name: '🤖 Bot Uptime', value: `${uptimeDays}g ${uptimeHours}s ${uptimeMins}d`, inline: false }
       )
       .setTimestamp();
-      
+
     await interaction.editReply({ embeds: [embed] });
   });
 
@@ -299,13 +299,13 @@ function createCommands(mc, tracker, storage) {
   handlers.set('zar', async (interaction) => {
     const roll = Math.floor(Math.random() * 100) + 1;
     const username = interaction.member?.nickname || interaction.user.displayName;
-    
+
     let emoji = '🎲';
     if (roll > 90) emoji = '🔥';
     else if (roll < 10) emoji = '💀';
 
     await interaction.reply(`**${username}** zarı yuvarladı... ve **${roll}** geldi! ${emoji}`);
-    
+
     // Oyun içine de gönder
     const safeName = username.replace(/"/g, '\\"');
     const command = `tellraw @a ["",{"text":"[Mini Oyun] ","color":"light_purple"},{"text":"${safeName}","color":"yellow"},{"text":" zar attı: ","color":"white"},{"text":"${roll}","color":"gold","bold":true}]`;

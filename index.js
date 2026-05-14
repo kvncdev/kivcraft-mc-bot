@@ -89,13 +89,13 @@ const tracker = new PlayerTracker(mc, storage, async (event, playerName, extra =
     switch (event) {
       case 'join': {
         const timeStr = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'medium' });
-        if (logChannel) await logChannel.send(`**${playerName}** sunucuya katıldı ✅\n⏰ *${timeStr}*`);
+        if (logChannel) await logChannel.send(`**${playerName}** sunucuya katıldı ✅\n\`\`\`\n⏰ ${timeStr}\n\`\`\``);
         if (securityChannel) await securityChannel.send({ embeds: [securityJoinEmbed(playerName, extra.onlineCount || 0)] });
         break;
       }
       case 'leave': {
         const timeStr = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'medium' });
-        if (logChannel) await logChannel.send(`**${playerName}** sunucudan ayrıldı ❌\n⏰ *${timeStr}*`);
+        if (logChannel) await logChannel.send(`**${playerName}** sunucudan ayrıldı ❌\n\`\`\`\n⏰ ${timeStr}\n\`\`\``);
         if (securityChannel) await securityChannel.send({ embeds: [securityLeaveEmbed(playerName, extra.onlineCount || 0, extra.sessionDuration)] });
         break;
       }
