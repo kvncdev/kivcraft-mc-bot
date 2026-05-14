@@ -87,15 +87,18 @@ const tracker = new PlayerTracker(mc, storage, async (event, playerName, extra =
     }
 
     switch (event) {
-      case 'join':
-        if (logChannel) await logChannel.send({ embeds: [joinEmbed(playerName)] });
+      case 'join': {
+        const timeStr = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'medium' });
+        if (logChannel) await logChannel.send(`**${playerName}** sunucuya katıldı ✅\n⏰ *${timeStr}*`);
         if (securityChannel) await securityChannel.send({ embeds: [securityJoinEmbed(playerName, extra.onlineCount || 0)] });
         break;
-
-      case 'leave':
-        if (logChannel) await logChannel.send({ embeds: [leaveEmbed(playerName)] });
+      }
+      case 'leave': {
+        const timeStr = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'short', timeStyle: 'medium' });
+        if (logChannel) await logChannel.send(`**${playerName}** sunucudan ayrıldı ❌\n⏰ *${timeStr}*`);
         if (securityChannel) await securityChannel.send({ embeds: [securityLeaveEmbed(playerName, extra.onlineCount || 0, extra.sessionDuration)] });
         break;
+      }
     }
   } catch (e) {
     console.error('❌ Log işlemi başarısız:', e.message);
